@@ -7,3 +7,6 @@ https://www.kaggle.com/code/supunmunasinghe/accuracy-82-transfer-learning-mobile
 
 ## Dataset
 https://www.kaggle.com/datasets/alistairking/recyclable-and-household-waste-classification/data
+
+## Colab Notebook
+https://colab.research.google.com/drive/13wjSVf50xCKebPDB16cpJFMCWNBOZvdB
