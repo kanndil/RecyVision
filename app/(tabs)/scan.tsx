@@ -1,45 +1,46 @@
 import {
     CameraType,
     CameraView,
-    FlashMode,
     useCameraPermissions,
 } from "expo-camera";
+import * as Location from 'expo-location';
 import { useEffect, useRef, useState } from "react";
-import { Button, Pressable, StyleSheet, Text, View, Dimensions, Platform } from "react-native";
+import { Button, Pressable, StyleSheet, Text, View, Dimensions, Platform, Alert } from "react-native";
 import { Image } from "expo-image";
 import { AntDesign } from "@expo/vector-icons";
 import { FontAwesome6 } from "@expo/vector-icons";
-import { Ionicons } from "@expo/vector-icons";
+import { recordScanEvent } from "../../services/scanEvents";
 
 export default function App() {
     const [permission, requestPermission] = useCameraPermissions();
+    const [locationPermission, setLocationPermission] = useState<Location.PermissionStatus | null>(null);
     const ref = useRef<CameraView>(null);
     const [uri, setUri] = useState<string | null>(null);
     const [facing, setFacing] = useState<CameraType>("back");
-    const [flash, setFlash] = useState<FlashMode>("off");
-    const [hasFlash, setHasFlash] = useState(false);
 
     // Request permissions on component mount
     useEffect(() => {
         (async () => {
+            // Request camera permission
             const cameraStatus = await requestPermission();
             console.log("Camera permission status:", cameraStatus);
 
-            // Check if device has flash capability
-            if (ref.current) {
-                try {
-                    // This is a simplified check - ideally you would check device capabilities
-                    // For now, we'll just assume back camera has flash
-                    setHasFlash(facing === "back");
-                } catch (e) {
-                    console.error("Error checking flash availability:", e);
-                    setHasFlash(false);
-                }
+            // Request location permission
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            setLocationPermission(status);
+            console.log("Location permission status:", status);
+
+            if (status !== 'granted') {
+                Alert.alert(
+                    "Permission Denied",
+                    "Location permission is required for this app to work properly.",
+                    [{ text: "OK" }]
+                );
             }
         })();
     }, []);
 
-    if (!permission) {
+    if (!permission || !locationPermission) {
         return (
             <View style={styles.container}>
                 <Text>Requesting permissions...</Text>
@@ -50,10 +51,27 @@ export default function App() {
     if (!permission.granted) {
         return (
             <View style={styles.container}>
-                <Text style={{ textAlign: "center" }}>
+                <Text style={{ textAlign: "center", marginBottom: 20 }}>
                     We need your permission to use the camera
                 </Text>
-                <Button onPress={requestPermission} title="Grant permission" />
+                <Button onPress={requestPermission} title="Grant camera permission" />
+            </View>
+        );
+    }
+
+    if (locationPermission !== 'granted') {
+        return (
+            <View style={styles.container}>
+                <Text style={{ textAlign: "center", marginBottom: 20 }}>
+                    We need your permission to access your location
+                </Text>
+                <Button 
+                    onPress={async () => {
+                        const { status } = await Location.requestForegroundPermissionsAsync();
+                        setLocationPermission(status);
+                    }} 
+                    title="Grant location permission" 
+                />
             </View>
         );
     }
@@ -65,39 +83,27 @@ export default function App() {
                 return;
             }
 
-            console.log("Taking picture with flash mode:", flash);
-
-            // Set specific takePictureAsync options for flash
-            const options = {
+            const photo = await ref.current.takePictureAsync({
                 quality: 1,
                 exif: true,
-                flash: flash
-            };
-
-            const photo = await ref.current.takePictureAsync(options);
+            });
             console.log("Picture taken:", photo);
             setUri((photo as any)?.uri);
+            
+            // Record the scan event
+            try {
+                await recordScanEvent();
+                console.log("Scan event recorded successfully");
+            } catch (error) {
+                console.error("Error recording scan event:", error);
+            }
         } catch (error) {
             console.error("Error taking picture:", error);
         }
     };
 
-    const toggleFlash = () => {
-        // Keep it simple for debugging - just toggle between off and on
-        setFlash(prev => prev === "off" ? "on" : "off");
-    };
-
     const toggleFacing = () => {
-        setFacing((prev) => {
-            const newFacing = prev === "back" ? "front" : "back";
-            // Update flash availability when camera is flipped
-            setHasFlash(newFacing === "back");
-            // Reset flash to off when switching to front camera (which typically doesn't have flash)
-            if (newFacing === "front") {
-                setFlash("off");
-            }
-            return newFacing;
-        });
+        setFacing((prev) => (prev === "back" ? "front" : "back"));
     };
 
     const renderPicture = () => {
@@ -158,23 +164,9 @@ export default function App() {
                 style={styles.camera}
                 ref={ref}
                 facing={facing}
-                flashMode={flash}
-                enableZoomGesture
             >
                 <View style={styles.shutterContainer}>
-                    {hasFlash ? (
-                        <Pressable onPress={toggleFlash} style={styles.cameraControlButton}>
-                            <Ionicons
-                                name={flash === "on" ? "flash" : "flash-off"}
-                                size={28}
-                                color="white"
-                            />
-                        </Pressable>
-                    ) : (
-                        <View style={styles.cameraControlButton}>
-                            <Ionicons name="flash-off" size={28} color="rgba(255,255,255,0.5)" />
-                        </View>
-                    )}
+                    <View style={styles.cameraControlButton} />
 
                     <Pressable onPress={takePicture}>
                         {({ pressed }) => (

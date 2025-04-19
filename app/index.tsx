@@ -1,6 +1,7 @@
-import { Text, View, Image, TouchableOpacity, Dimensions } from 'react-native';
+import { Text, View, Image, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { icons } from "@/constants/icons";
+import Calendar from '../components/Calendar';
 
 // Get screen dimensions
 const { width, height } = Dimensions.get('window');
@@ -41,9 +42,19 @@ export default function Index() {
             </View>
 
             {/* Main Content */}
-            <View className="flex-1 justify-center items-center">
-                <Text className="text-5xl text-light-100 font-bold">Welcome!</Text>
-            </View>
+            <ScrollView className="flex-1">
+                <View style={{ padding: getResponsiveSize(20) }}>
+                    <Text style={{
+                        fontSize: getResponsiveSize(24),
+                        fontWeight: 'bold',
+                        color: '#1A1A1A',
+                        marginBottom: getResponsiveSize(16),
+                    }}>
+                        Your Recycling Progress
+                    </Text>
+                    <Calendar />
+                </View>
+            </ScrollView>
 
             {/* Navigation Bar */}
             <View 
