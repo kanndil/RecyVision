@@ -1,23 +1,34 @@
 import React from 'react';
 import { Tabs } from "expo-router";
-import { ImageBackground, Image, Text, View } from 'react-native';
+import { Image, Text, View, TouchableOpacity, Dimensions } from 'react-native';
+import { useRouter } from 'expo-router';
 
 import { icons } from "@/constants/icons";
 
+// Get screen dimensions
+const { width, height } = Dimensions.get('window');
+
+// Calculate responsive sizes
+const getResponsiveSize = (baseSize: number) => {
+    return Math.round((baseSize * height) / 812);
+};
+
 function TabIcon({ focused, icon, title }: any) {
     const tintColor = focused ? "#82C46B" : "#B4B4B4";
-    const iconSize = 30; // Increase size
-    const translateY = -5; // Adjust positioning if necessary
+    const iconSize = getResponsiveSize(30);
 
     return (
-        <View className="justify-center items-center mt-4 rounded-full">
+        <View style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: getResponsiveSize(50),
+        }}>
             <Image
                 source={icon}
                 style={{
                     tintColor,
                     width: iconSize,
                     height: iconSize,
-                    transform: [{ translateY }],
                 }}
             />
         </View>
@@ -26,53 +37,102 @@ function TabIcon({ focused, icon, title }: any) {
 
 function TabText({ focused, title }: { focused: boolean; title: string }) {
     const textColor = focused ? "#82C46B" : "#B4B4B4";
-    const fontSize = 16; // Increase the font size
+    const fontSize = getResponsiveSize(16);
 
     return (
-        <Text style={{ color: textColor, fontSize }}>
+        <Text style={{ 
+            color: textColor, 
+            fontSize,
+            textAlign: 'center',
+            marginTop: getResponsiveSize(4)
+        }}>
             {title}
         </Text>
     );
 }
 
-
-
-
 const _Layout = () => {
+    const router = useRouter();
+
     return (
         <Tabs
             screenOptions={{
                 tabBarStyle: {
-                    height: 85, // Increase height
-                    paddingTop: 5, // Adjust padding if needed
-                    paddingBottom: 10, // Add more spacing at the bottom
-                }
+                    height: getResponsiveSize(85),
+                    paddingTop: getResponsiveSize(5),
+                    paddingBottom: getResponsiveSize(10),
+                    backgroundColor: 'white',
+                    borderTopWidth: 1,
+                    borderTopColor: '#E5E5E5',
+                    flexDirection: 'row',
+                    justifyContent: 'space-around',
+                    alignItems: 'center',
+                },
+                headerStyle: {
+                    backgroundColor: 'white',
+                    height: getResponsiveSize(60),
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#E5E5E5',
+                },
+                headerTitleStyle: {
+                    color: '#1A1A1A',
+                    fontSize: getResponsiveSize(18),
+                    fontWeight: '600',
+                    textAlign: 'center',
+                },
+                headerTitleAlign: 'center',
+                headerLeft: () => (
+                    <TouchableOpacity 
+                        onPress={() => router.push('/')}
+                        style={{ 
+                            marginLeft: getResponsiveSize(15),
+                            width: getResponsiveSize(24),
+                            height: getResponsiveSize(24),
+                        }}
+                    >
+                        <Image
+                            source={icons.home}
+                            style={{
+                                width: getResponsiveSize(24),
+                                height: getResponsiveSize(24),
+                                tintColor: "#82C46B"
+                            }}
+                        />
+                    </TouchableOpacity>
+                ),
             }}
-            >
-            <Tabs.Screen
-                name="index"
-                options={{
-                    title: "Home",
-                    headerShown: false,
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon focused={focused} icon={icons.home} title="Home" />
-                    ),
-                    tabBarLabel: ({ focused }) => (
-                        <TabText focused={focused} title="Home" /> // Use TabText here
-                    ),
-                }}
-            />
+        >
             <Tabs.Screen
                 name="map"
                 options={{
                     title: 'Map',
-                    headerShown: false,
-
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon focused={focused} icon={icons.map} title="Map" />
-                    ),
-                    tabBarLabel: ({ focused }) => (
-                        <TabText focused={focused} title="Map" /> // Use TabText here
+                    headerShown: true,
+                    tabBarButton: () => (
+                        <TouchableOpacity 
+                            onPress={() => router.push('/(tabs)/map')}
+                            style={{ 
+                                alignItems: 'center',
+                                height: getResponsiveSize(50),
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Image
+                                source={icons.map}
+                                style={{
+                                    width: getResponsiveSize(30),
+                                    height: getResponsiveSize(30),
+                                    tintColor: "#82C46B",
+                                }}
+                            />
+                            <Text style={{ 
+                                color: "#82C46B",
+                                fontSize: getResponsiveSize(16),
+                                marginTop: getResponsiveSize(4),
+                                textAlign: 'center',
+                            }}>
+                                Map
+                            </Text>
+                        </TouchableOpacity>
                     ),
                 }}
             />
@@ -80,58 +140,36 @@ const _Layout = () => {
                 name="scan"
                 options={{
                     title: 'Recycling',
-                    headerShown: false,
-                    tabBarIcon: () => {
-                        const size = 60; // Adjust this size as needed (diameter of the circle)
-                        const iconSize = size * 0.7; // Icon size proportional to the circle (e.g., 50% of the circle)
-
-                        return (
+                    headerShown: true,
+                    tabBarButton: () => (
+                        <TouchableOpacity 
+                            onPress={() => router.push('/(tabs)/scan')}
+                            style={{ 
+                                alignItems: 'center',
+                                height: getResponsiveSize(50),
+                                justifyContent: 'center',
+                            }}
+                        >
                             <View
                                 style={{
+                                    width: getResponsiveSize(60),
+                                    height: getResponsiveSize(60),
+                                    borderRadius: getResponsiveSize(30),
+                                    backgroundColor: "#82C46B",
                                     justifyContent: "center",
                                     alignItems: "center",
-                                    transform: [{ translateY: 10 }], // Adjust Y-coordinate if needed
                                 }}
                             >
-                                {/* Always Visible Green Circle */}
-                                <View
+                                <Image
+                                    source={icons.recycling}
                                     style={{
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                        width: size, // Circle width
-                                        height: size, // Circle height
-                                        borderRadius: size / 2, // Half of the size for a perfect circle
-                                        backgroundColor: "#82C46B", // Green background
+                                        width: getResponsiveSize(42),
+                                        height: getResponsiveSize(42),
+                                        tintColor: "white",
                                     }}
-                                >
-                                    {/* Icon (White Color) */}
-                                    <Image
-                                        source={icons.recycling}
-                                        style={{
-                                            width: iconSize, // Icon width based on size
-                                            height: iconSize, // Icon height based on size
-                                            tintColor: "white", // Icon is always white
-                                        }}
-                                    />
-                                </View>
+                                />
                             </View>
-                        );
-                    },
-                    tabBarLabel: ({ focused }) => (
-                        <TabText focused={focused} title="" />
-                    ),
-                }}
-            />
-            <Tabs.Screen
-                name="calendar"
-                options={{
-                    title: 'Calendar',
-                    headerShown: false,
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon focused={focused} icon={icons.calendar} title="Calendar" />
-                    ),
-                    tabBarLabel: ({ focused }) => (
-                        <TabText focused={focused} title="Calendar" /> // Use TabText here
+                        </TouchableOpacity>
                     ),
                 }}
             />
@@ -139,12 +177,33 @@ const _Layout = () => {
                 name="account"
                 options={{
                     title: 'Account',
-                    headerShown: false,
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon focused={focused} icon={icons.account} title="Account" />
-                    ),
-                    tabBarLabel: ({ focused }) => (
-                        <TabText focused={focused} title="Account" /> // Use TabText here
+                    headerShown: true,
+                    tabBarButton: () => (
+                        <TouchableOpacity 
+                            onPress={() => router.push('/(tabs)/account')}
+                            style={{ 
+                                alignItems: 'center',
+                                height: getResponsiveSize(50),
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Image
+                                source={icons.account}
+                                style={{
+                                    width: getResponsiveSize(30),
+                                    height: getResponsiveSize(30),
+                                    tintColor: "#82C46B",
+                                }}
+                            />
+                            <Text style={{ 
+                                color: "#82C46B",
+                                fontSize: getResponsiveSize(16),
+                                marginTop: getResponsiveSize(4),
+                                textAlign: 'center',
+                            }}>
+                                Account
+                            </Text>
+                        </TouchableOpacity>
                     ),
                 }}
             />
