@@ -1,5 +1,6 @@
 import { Text, View, Image, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { Link, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { icons } from "@/constants/icons";
 import Calendar from '../components/Calendar';
 
@@ -13,9 +14,10 @@ const getResponsiveSize = (baseSize: number) => {
 
 export default function Index() {
     const router = useRouter();
+    const insets = useSafeAreaInsets();
 
     return (
-        <View className="flex-1 bg-white">
+        <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
             {/* Top Navigation Bar */}
             <View 
                 style={{

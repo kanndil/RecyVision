@@ -42,6 +42,15 @@ export default function Calendar({ onDateSelect }: CalendarProps) {
             days.push(new Date(year, month, i));
         }
         
+        // Add empty cells at the end to complete the last row
+        const totalCells = days.length;
+        const remainingCells = 7 - (totalCells % 7);
+        if (remainingCells < 7) {
+            for (let i = 0; i < remainingCells; i++) {
+                days.push(null);
+            }
+        }
+        
         return days;
     };
 
@@ -162,6 +171,7 @@ const styles = StyleSheet.create({
     daysGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
+        justifyContent: 'space-around',
     },
     dayCell: {
         width: 40,
